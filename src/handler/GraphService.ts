@@ -7,6 +7,7 @@ import { TLineChartData } from "../entities/TLineChartData";
 import { TGraphData } from "../entities/TGraphData";
 import IRequestHandler from "../entities/TRequestHandler";
 import { TServiceCohesion } from "../entities/TServiceCohesion";
+import { TServiceTestAPI} from "../entities/TServiceTestAPI";
 import { TTotalServiceInterfaceCohesion } from "../entities/TTotalServiceInterfaceCohesion";
 import DataCache from "../services/DataCache";
 import ServiceUtils from "../services/ServiceUtils";
@@ -83,6 +84,12 @@ export default class GraphService extends IRequestHandler {
       const namespace = req.params["namespace"];
       res.json(
         this.getServiceCoupling(namespace && decodeURIComponent(namespace))
+      );
+    });
+    this.addRoute("get", "/testAPI/:namespace?", async (req, res) => {
+      const namespace = req.params["namespace"];
+      res.json(
+        this.getTestAPI(namespace && decodeURIComponent(namespace))
       );
     });
     this.addRoute("get", "/requests/:uniqueName", async (req, res) => {
@@ -287,6 +294,104 @@ export default class GraphService extends IRequestHandler {
     return dependencies
       .toServiceCoupling()
       .sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  getTestAPI(namespace?: string) {
+    const dependencies = DataCache.getInstance()
+      .get<CLabeledEndpointDependencies>("LabeledEndpointDependencies")
+      .getData(namespace);
+    if (!dependencies) return [];
+    const dataType = DataCache.getInstance()
+      .get<CEndpointDataType>("EndpointDataType")
+      .getData()
+      .map((e) => {
+        const raw = e.toJSON();
+        raw.labelName =
+          DataCache.getInstance()
+            .get<CLabelMapping>("LabelMapping")
+            .getData()
+            ?.get(raw.uniqueEndpointName) || raw.uniqueEndpointName;
+        return new EndpointDataType(raw);
+      });
+
+    const dataCohesion = EndpointDataType.GetServiceCohesion(dataType).reduce(
+      (map, d) => map.set(d.uniqueServiceName, d),
+      new Map<string, TServiceCohesion>()
+    );
+
+    const usageCohesions = dependencies.toServiceEndpointCohesion();
+
+    const results = usageCohesions.map(
+      (u): TTotalServiceInterfaceCohesion | null => {
+        const uniqueServiceName = u.uniqueServiceName;
+        const [service, namespace, version] = uniqueServiceName.split("\t");
+        const dCohesion = dataCohesion.get(uniqueServiceName);
+        if (!dCohesion) {
+          Logger.error(
+            `Mismatching service cohesion information with unique service: ${uniqueServiceName}`
+          );
+          return null;
+        }
+        return {
+          uniqueServiceName,
+          name: `${service}.${namespace} (${version})`,
+          dataCohesion: dCohesion.cohesiveness,
+          usageCohesion: u.endpointUsageCohesion,
+          totalInterfaceCohesion:
+            (dCohesion.cohesiveness + u.endpointUsageCohesion) / 2,
+          endpointCohesion: dCohesion.endpointCohesion,
+          totalEndpoints: u.totalEndpoints,
+          consumers: u.consumers,
+        };
+      }
+    );
+    const results_two = dependencies.toServiceCoupling().sort((a, b) => a.name.localeCompare(b.name));
+
+    
+    const result_all: TServiceTestAPI[] = results.map((result) => {
+      if (result && result.dataCohesion !== undefined) {
+        return {
+          uniqueServiceName:result.uniqueServiceName,
+          name: result.name,
+          dataCohesion: result.dataCohesion,
+          usageCohesion: result.usageCohesion,
+          totalInterfaceCohesion:result.totalInterfaceCohesion,
+          endpointCohesion: result.endpointCohesion,
+          totalEndpoints: result.totalEndpoints,
+          consumers: result.consumers,
+          ais:0,
+          ads:0,
+          acs:0,
+        };
+      }
+      // 如果 result 為 null 或 dataCohesion 不存在，返回一個預設值
+      return {
+        uniqueServiceName:'',
+        name: '',
+        dataCohesion: 0,
+        usageCohesion: 0,
+        totalInterfaceCohesion:0,
+        endpointCohesion: [],
+        totalEndpoints: 0,
+        consumers: [],
+        ais:0,
+        ads:0,
+        acs:0,
+      };
+    });
+    
+    results_two.map((result, index) => {
+      if (result && result.ais !== undefined && result_all[index]) {
+        // 更新 result_all 中對應索引的元素的 ais 屬性
+        result_all[index].ais = result.ais;
+        result_all[index].ads = result.ads;
+        result_all[index].acs = result.acs;
+      }
+      return result; // 保持 map 函數的結構
+    });
+
+    return result_all;
+
   }
 
   async getRequestInfoChartData(
