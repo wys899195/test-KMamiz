@@ -45,10 +45,16 @@ export default class CombinedRealtimeDataList {
         const endpointMap = new Map<string, TCombinedRealtimeData[]>();
         const serviceMap = new Map<string, TCombinedRealtimeData[]>();
         dailyData.forEach((r) => {
+          /*以uniqueEndpointName作為endpointMap的key,value為一個陣列，裡面包含多個r物件，除了
+            latestTimestamp屬性的值皆等於time變數的值之外，每個r物件的uniqueEndpointName屬性
+            的值皆等於key值*/
           endpointMap.set(
             r.uniqueEndpointName,
             (endpointMap.get(r.uniqueEndpointName) || []).concat([r])
           );
+          /*以uniqueServiceName作為serviceMap的key,value為一個陣列，裡面包含多個r物件，除了
+            latestTimestamp屬性的值皆等於time變數的值之外，每個r物件的uniqueServiceName屬性
+            的值皆等於key值*/
           serviceMap.set(
             r.uniqueServiceName,
             (serviceMap.get(r.uniqueServiceName) || []).concat([r])

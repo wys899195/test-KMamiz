@@ -27,8 +27,11 @@ export class RealtimeDataList {
 
     const combined = [...uniqueNameMapping.values()]
       .map((group): TCombinedRealtimeData[] => {
+        /*[...uniqueNameMapping.values()]為一2d array，包含多個group(1d array)，
+          一個group裡面包含多個uniqueEndpointName相同的TRealtimeData物件*/
         const statusMap = new Map<string, TRealtimeData[]>();
         group.forEach((r) => {
+          /*statusMap把group裡所有TRealtimeData物件依照其status屬性值又分割為多個array*/
           statusMap.set(r.status, (statusMap.get(r.status) || []).concat([r]));
         });
         const sample = group[0];
@@ -44,6 +47,7 @@ export class RealtimeDataList {
         const combinedSubGroup = [...statusMap.entries()].map(
           ([status, subGroup]): TCombinedRealtimeData => {
             const combined = subGroup.reduce((prev, curr) => {
+              //acc的意思很可能是accumulator(累加器)
               const acc = { ...prev };
               acc.latency += curr.latency;
               acc.requestBody = Utils.MergeStringBody(
