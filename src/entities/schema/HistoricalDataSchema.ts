@@ -14,6 +14,7 @@ export const HistoricalDataSchema = new Schema<THistoricalData>({
       serverErrors: { type: Number, required: true },
       requestErrors: { type: Number, required: true },
       risk: { type: Number },
+      latencyMean: { type: Number, required: true },
       latencyCV: { type: Number, required: true },
       endpoints: [
         {
@@ -23,6 +24,7 @@ export const HistoricalDataSchema = new Schema<THistoricalData>({
           requests: { type: Number, required: true },
           serverErrors: { type: Number, required: true },
           requestErrors: { type: Number, required: true },
+          latencyMean: { type: Number, required: true },
           latencyCV: { type: Number, required: true },
         },
       ],
