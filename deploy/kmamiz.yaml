@@ -13,7 +13,7 @@ spec:
       serviceAccountName: kmamiz-reader
       containers:
         - name: kmamiz
-          image: "reg.stw.tw/kmamiz:latest"
+          image: "wys899195/kmamiz:latest"
           ports:
             - containerPort: 3000
           env:
