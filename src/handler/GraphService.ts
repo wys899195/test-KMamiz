@@ -4,6 +4,8 @@ import { CLabelMapping } from "../classes/Cacheable/CLabelMapping";
 import EndpointDataType from "../classes/EndpointDataType";
 import { EndpointDependencies } from "../classes/EndpointDependencies";
 import { TLineChartData } from "../entities/TLineChartData";
+// import { TStatistics } from "../entities/TStatistics";
+
 import { TGraphData } from "../entities/TGraphData";
 import IRequestHandler from "../entities/TRequestHandler";
 import { TServiceCohesion } from "../entities/TServiceCohesion";
@@ -68,6 +70,17 @@ export default class GraphService extends IRequestHandler {
         )
       );
     });
+    // this.addRoute("get", "/statistics/:namespace?", async (req, res) => {
+    //   const notBeforeQuery = req.query["notBefore"] as string;
+    //   const notBefore = notBeforeQuery ? parseInt(notBeforeQuery) : undefined;
+    //   const namespace = req.params["namespace"];
+    //   res.json(
+    //     await this.getServiceHistoricalStatistics(
+    //       namespace && decodeURIComponent(namespace),
+    //       notBefore
+    //     )
+    //   );
+    // });
     this.addRoute("get", "/cohesion/:namespace?", async (req, res) => {
       const namespace = req.params["namespace"];
       res.json(
@@ -221,6 +234,68 @@ export default class GraphService extends IRequestHandler {
       metrics,
     };
   }
+  
+  // async getServiceHistoricalStatistics(
+  //   namespace?: string,
+  //   notBefore?: number
+  // ): Promise<TStatistics>  {
+  //   const historicalData =
+  //     await ServiceUtils.getInstance().getRealtimeHistoricalData(
+  //       namespace,
+  //       notBefore
+  //     );
+
+  //   if (historicalData.length === 0) {
+  //     return {
+  //       servicesStatistics:[]
+  //     }
+  //   }
+  //   var servicesStatisticsDict: Record<string, {
+  //     totalatencyMean:number,
+  //     totalRequests:number,
+  //     totalServerError:number,
+  //     totalRequestError:number,
+  //     divBase:number,
+  //   }> = {}
+
+  //   const serviceNames = historicalData[0].services
+  //   .sort((a, b) => a.uniqueServiceName.localeCompare(b.uniqueServiceName))
+  //   .map((s) => `${s.service}.${s.namespace} (${s.version})`);
+
+  //   serviceNames.forEach((sn) => {
+  //     servicesStatisticsDict[sn] = {
+  //       totalatencyMean:0,
+  //       totalRequests:0,
+  //       totalServerError:0,
+  //       totalRequestError:0,
+  //       divBase:0
+  //     }
+  //   });
+
+  //   historicalData.forEach((h) => {
+  //     h.services.forEach((si) => {
+  //       servicesStatisticsDict[si.uniqueServiceName].totalatencyMean += si.latencyMean;
+  //       servicesStatisticsDict[si.uniqueServiceName].totalRequests += si.requests;
+  //       servicesStatisticsDict[si.uniqueServiceName].totalRequestError += si.requestErrors;
+  //       servicesStatisticsDict[si.uniqueServiceName].totalServerError += si.serverErrors;
+  //       servicesStatisticsDict[si.uniqueServiceName].divBase += 1;
+  //     });
+  //   });
+
+  //   const servicesStatistics = Object.entries(servicesStatisticsDict)
+  //   .filter(([_, vals]) => vals.divBase !== 0)
+  //   .map(([name, vals]) => ({
+  //       uniqueServiceName:name,
+  //       latencyMean: vals.totalatencyMean / vals.divBase,
+  //       serverErrorRate: vals.totalServerError / vals.totalRequests,
+  //       requestErrorsRate: vals.totalRequestError / vals.totalRequests,
+  //     })
+  //   );
+
+  //   return {
+  //     servicesStatistics:servicesStatistics
+  //   };
+  // }
 
   getServiceCohesion(namespace?: string) {
     const dependencies = DataCache.getInstance()
