@@ -4,6 +4,7 @@ export type TStatistics= {
 
 export type TServiceStatistics= {
   uniqueServiceName: string;
+  name: string;
   latencyMean: number;
   serverErrorRate: number;
   requestErrorsRate: number;
