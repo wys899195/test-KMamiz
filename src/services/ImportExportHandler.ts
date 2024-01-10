@@ -7,6 +7,7 @@ import { CLookBackRealtimeData } from "../classes/Cacheable/CLookBackRealtimeDat
 import { CReplicas } from "../classes/Cacheable/CReplicas";
 import { CTaggedInterfaces } from "../classes/Cacheable/CTaggedInterfaces";
 import { CTaggedSwaggers } from "../classes/Cacheable/CTaggedSwaggers";
+import { CTaggedGraphData } from "../classes/Cacheable/CTaggedGraphData";
 import { CUserDefinedLabel } from "../classes/Cacheable/CUserDefinedLabel";
 import { AggregatedDataModel } from "../entities/schema/AggregatedDataSchema";
 import { HistoricalDataModel } from "../entities/schema/HistoricalDataSchema";
@@ -46,6 +47,7 @@ export default class ImportExportHandler {
       new CReplicas(),
       new CTaggedInterfaces(),
       new CTaggedSwaggers(),
+      new CTaggedGraphData(),
       new CLabeledEndpointDependencies(),
       new CUserDefinedLabel(),
       new CLookBackRealtimeData(),

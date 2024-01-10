@@ -1,10 +1,12 @@
 import { CEndpointDataType } from "../classes/Cacheable/CEndpointDataType";
 import { CLabeledEndpointDependencies } from "../classes/Cacheable/CLabeledEndpointDependencies";
+import { CTaggedGraphData } from "../classes/Cacheable/CTaggedGraphData";
 import { CLabelMapping } from "../classes/Cacheable/CLabelMapping";
 import EndpointDataType from "../classes/EndpointDataType";
 import { EndpointDependencies } from "../classes/EndpointDependencies";
 import { TLineChartData } from "../entities/TLineChartData";
 import { TServiceStatistics } from "../entities/TStatistics";
+import { TTaggedGraphData } from "../entities/TTaggedGraphData";
 
 import { TGraphData } from "../entities/TGraphData";
 import IRequestHandler from "../entities/TRequestHandler";
@@ -43,6 +45,59 @@ export default class GraphService extends IRequestHandler {
         else res.sendStatus(404);
       }
     );
+    this.addRoute(
+      "get", 
+      "/taggedDependency/endpoint", 
+      async (req, res) => {
+      const { tag } = req.query as { tag: string };
+      const graph = await this.getTaggedDependencyGraph(
+        tag && decodeURIComponent(tag)
+      );
+      if (graph) res.json(graph);
+      else res.sendStatus(404);
+    });
+    this.addRoute(
+      "get", 
+      "/taggedDependency/service", 
+      async (req, res) => {
+      const { tag } = req.query as { tag: string };
+      const graph = await this.getTaggedServiceDependencyGraph(
+        tag && decodeURIComponent(tag)
+      );
+      if (graph) res.json(graph);
+      else res.sendStatus(404);
+    });
+    this.addRoute(
+      "get", 
+      "/taggedDependency/tags", 
+      async (req, res) => {
+        req = req; // to aviod compile error: 'req' is declared but its value is never read"
+        res.json(this.getTagsOfTaggedDependencyGraphData());
+    });
+    this.addRoute(
+      "post", 
+      "/taggedDependency/tags", 
+      async (req, res) => {
+      const tagged = req.body as TTaggedGraphData;
+      if (!tagged) res.sendStatus(400);
+      else {
+        this.addTaggedDependencyGraphData(tagged);
+        res.sendStatus(200);
+      }
+    });
+    this.addRoute(
+      "delete", 
+      "/taggedDependency/tags",
+      async (req, res) => {
+      const { tag } = req.body as {
+        tag: string;
+      };
+      if (!tag) res.sendStatus(400);
+      else {
+        this.deleteTaggedDependencyGraphData(tag);
+        res.sendStatus(200);
+      }
+    });
     this.addRoute("get", "/chord/direct/:namespace?", async (req, res) => {
       const namespace = req.params["namespace"];
       res.json(
@@ -153,6 +208,69 @@ export default class GraphService extends IRequestHandler {
     return graph;
   }
 
+  async getTaggedDependencyGraph(tag?: string) {
+    if (tag) {
+      const existing = DataCache.getInstance()
+        .get<CTaggedGraphData>("TaggedGraphDatas")
+        .getData(tag);
+      if (existing.length > 0) {
+        const graph = existing[0].graphData;
+        return graph;
+      }
+    }
+    else if (tag == ""){ // get latest version dependency graph
+      return this.getDependencyGraph()
+    }
+    return undefined //no getting any graph
+  }
+
+  async getTaggedServiceDependencyGraph(tag?: string) {
+    const endpointGraph = await this.getTaggedDependencyGraph(tag);
+    if (!endpointGraph) return endpointGraph;
+    const linkSet = new Set<string>();
+    endpointGraph.links.forEach((l) => {
+      const source = l.source.split("\t").slice(0, 2).join("\t");
+      const target = l.target.split("\t").slice(0, 2).join("\t");
+      linkSet.add(`${source}\n${target}`);
+    });
+
+    const links = [...linkSet]
+      .map((l) => l.split("\n"))
+      .map(([source, target]) => ({ source, target }));
+
+    const nodes = endpointGraph.nodes.filter((n) => n.id === n.group);
+    nodes.forEach((n) => {
+      n.linkInBetween = links.filter((l) => l.source === n.id);
+      n.dependencies = n.linkInBetween.map((l) => l.target);
+    });
+
+    const graph: TGraphData = {
+      nodes,
+      links,
+    };
+    return graph;
+  }
+
+  getTagsOfTaggedDependencyGraphData() {
+    return DataCache.getInstance()
+      .get<CTaggedGraphData>("TaggedGraphDatas")
+      .getData()
+      .sort((a, b) => b.time! - a.time!)
+      .map((t) => t.tag);
+  }
+
+  addTaggedDependencyGraphData(tagged: TTaggedGraphData) {
+    DataCache.getInstance()
+      .get<CTaggedGraphData>("TaggedGraphDatas")
+      .add(tagged);
+  }
+
+  deleteTaggedDependencyGraphData(tag: string) {
+    DataCache.getInstance()
+      .get<CTaggedGraphData>("TaggedGraphDatas")
+      .delete(tag);
+  }
+
   async getDirectServiceChord(namespace?: string) {
     const dependencies = DataCache.getInstance()
       .get<CLabeledEndpointDependencies>("LabeledEndpointDependencies")
@@ -248,9 +366,6 @@ export default class GraphService extends IRequestHandler {
       if (historicalData.length === 0) {
         return []
       }
-      Logger.info("following is historicalData length");
-      Logger.info(historicalData.length.toString());
-      Logger.info("------------------------------")
       var servicesStatisticsDict: Record<string, {
         name: string,
         totalatencyMean:number,
@@ -259,8 +374,6 @@ export default class GraphService extends IRequestHandler {
         totalRequestError:number,
         divBase:number,
       }> = {}
-
-      Logger.info("gogo 1");
 
       historicalData.forEach((h) => {
         h.services.forEach((si) => {
@@ -275,22 +388,15 @@ export default class GraphService extends IRequestHandler {
               divBase:0
             }
           }
-          Logger.info(JSON.stringify(si));
-          Logger.info("gogo 1-1");
-          //Logger.info(servicesStatisticsDict[si.uniqueServiceName].totalatencyMean.toString());
-          //Logger.info(si.latencyMean.toString());
           servicesStatisticsDict[si.uniqueServiceName].totalatencyMean += si.latencyMean;
-          //Logger.info(servicesStatisticsDict[si.uniqueServiceName].totalatencyMean.toString());
           
           servicesStatisticsDict[si.uniqueServiceName].totalRequests += si.requests;
           servicesStatisticsDict[si.uniqueServiceName].totalRequestError += si.requestErrors;
           servicesStatisticsDict[si.uniqueServiceName].totalServerError += si.serverErrors;
           servicesStatisticsDict[si.uniqueServiceName].divBase += 1;
-          Logger.info("gogo 1-2");
           
         });
       });
-      Logger.info("gogo 2");
 
       const servicesStatistics = Object.entries(servicesStatisticsDict)
       .filter(([_, vals]) => vals.divBase !== 0)
@@ -302,8 +408,6 @@ export default class GraphService extends IRequestHandler {
           requestErrorsRate: vals.totalRequestError / vals.totalRequests,
         })
       );
-      Logger.info(JSON.stringify(servicesStatistics));
-      Logger.info("gogo 3");
       return servicesStatistics;
     } catch (err) {
       Logger.error("Cannot getServiceHistoricalStatistics.");
