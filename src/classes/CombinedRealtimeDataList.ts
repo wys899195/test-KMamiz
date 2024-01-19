@@ -95,10 +95,10 @@ export default class CombinedRealtimeDataList {
           { requests: 0, requestErrors: 0, serverErrors: 0 }
         );
         const validLatencies = r.filter(rl => rl.latency.mean !== undefined && rl.latency.mean !== null);
-        const meanLatency = validLatencies.reduce((sum, rl) => sum + rl.latency.mean, 0) / validLatencies.length || 0;
+        const meanLatency = validLatencies.reduce((sum, rl) => sum + rl.latency.mean, 0) / validLatencies.length;
 
         return {
-          latencyMean: meanLatency / 1000,//divide by 1000 to change the unit to milliseconds
+          latencyMean: (typeof(meanLatency) ==="number" && isFinite(meanLatency)) ? meanLatency / 1000 : 0,//divide by 1000 to change the unit to milliseconds
           latencyCV: Math.max(...r.map((rl) => rl.latency.cv || 0)),
           method: method as TRequestTypeUpper,
           requestErrors,
@@ -132,9 +132,9 @@ export default class CombinedRealtimeDataList {
           },
           { requests: 0, requestErrors: 0, serverErrors: 0 }
         );
-        const validLatencies = r.filter(rl => rl.latency.mean !== undefined && rl.latency.mean !== null);
-        const meanLatency = validLatencies.reduce((sum, rl) => sum + rl.latency.mean, 0) / validLatencies.length || 0;
-
+        const validLatencies = r.filter(rl => typeof(rl.latency.mean) ==="number" && isFinite(rl.latency.mean));
+        const meanLatency = validLatencies.reduce((sum, rl) => sum + rl.latency.mean, 0) / validLatencies.length;
+        
         return {
           date: new Date(time),
           endpoints,
@@ -144,7 +144,7 @@ export default class CombinedRealtimeDataList {
           requests,
           requestErrors,
           serverErrors,
-          latencyMean: meanLatency / 1000 ,//divide by 1000 to change the unit to milliseconds
+          latencyMean: (typeof(meanLatency) ==="number" && isFinite(meanLatency)) ? meanLatency / 1000 : 0,//divide by 1000 to change the unit to milliseconds
           latencyCV: Math.max(...r.map((rl) => rl.latency.cv || 0)),
           uniqueServiceName,
           risk: risks.find(

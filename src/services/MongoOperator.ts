@@ -8,11 +8,11 @@ import { AggregatedDataModel } from "../entities/schema/AggregatedDataSchema";
 import { HistoricalDataModel } from "../entities/schema/HistoricalDataSchema";
 import { EndpointDependencyModel } from "../entities/schema/EndpointDependencySchema";
 import { TEndpointDependency } from "../entities/TEndpointDependency";
-// import { CombinedRealtimeDataModel } from "../entities/schema/CombinedRealtimeDateSchema";
-// import { EndpointDataTypeModel } from "../entities/schema/EndpointDataTypeSchema";
-// import { EndpointLabelModel } from "../entities/schema/EndpointLabel";
-// import { TaggedInterfaceModel } from "../entities/schema/TaggedInterface";
-// import { TaggedSwaggerModel } from "../entities/schema/TaggedSwagger";
+import { CombinedRealtimeDataModel } from "../entities/schema/CombinedRealtimeDateSchema";
+import { EndpointDataTypeModel } from "../entities/schema/EndpointDataTypeSchema";
+import { EndpointLabelModel } from "../entities/schema/EndpointLabel";
+import { TaggedInterfaceModel } from "../entities/schema/TaggedInterface";
+import { TaggedSwaggerModel } from "../entities/schema/TaggedSwagger";
 import { TaggedGraphDataModel } from "../entities/schema/TaggedGraphData";
 
 
@@ -128,15 +128,29 @@ export default class MongoOperator {
 
   async clearDatabase() {
     if (!GlobalSettings.EnableTestingEndpoints) return;
+    await MongoOperator.getInstance().deleteAll(AggregatedDataModel);
+    await MongoOperator.getInstance().deleteAll(CombinedRealtimeDataModel);
+    await MongoOperator.getInstance().deleteAll(EndpointDataTypeModel);
+    await MongoOperator.getInstance().deleteAll(EndpointDependencyModel);
+    await MongoOperator.getInstance().deleteAll(EndpointLabelModel);
+    await MongoOperator.getInstance().deleteAll(HistoricalDataModel);
+    await MongoOperator.getInstance().deleteAll(TaggedInterfaceModel);
+    await MongoOperator.getInstance().deleteAll(TaggedSwaggerModel);
+    await MongoOperator.getInstance().deleteAll(TaggedGraphDataModel);
+    
+  }
+
+  async clearDatabaseOnlyLatestDependency() {
+    if (!GlobalSettings.EnableTestingEndpoints) return;
     // await MongoOperator.getInstance().deleteAll(AggregatedDataModel);
     // await MongoOperator.getInstance().deleteAll(CombinedRealtimeDataModel);
     // await MongoOperator.getInstance().deleteAll(EndpointDataTypeModel);
-    await MongoOperator.getInstance().deleteAll(EndpointDependencyModel);
+     await MongoOperator.getInstance().deleteAll(EndpointDependencyModel);
     // await MongoOperator.getInstance().deleteAll(EndpointLabelModel);
     // await MongoOperator.getInstance().deleteAll(HistoricalDataModel);
     // await MongoOperator.getInstance().deleteAll(TaggedInterfaceModel);
     // await MongoOperator.getInstance().deleteAll(TaggedSwaggerModel);
-    await MongoOperator.getInstance().deleteAll(TaggedGraphDataModel);
+    // await MongoOperator.getInstance().deleteAll(TaggedGraphDataModel);
     
   }
 }

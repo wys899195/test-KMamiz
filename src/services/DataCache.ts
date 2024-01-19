@@ -49,6 +49,12 @@ export default class DataCache {
     this._cacheMap.clear();
   }
 
+  clearOnlyLatestDependency() {
+    this._cacheMap.delete("EndpointDependencies")
+    this._cacheMap.delete("LabeledEndpointDependencies")
+    this._caches = [...this._cacheMap.values()];
+  }
+
   import(caches: [string, any][]) {
     this.clear();
     this.register(

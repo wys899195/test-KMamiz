@@ -43,7 +43,6 @@ export class CTaggedGraphData extends Cacheable<TTaggedGraphData[]> {
   }
 
   add(tagged: TTaggedGraphData) {
-    Logger.info("add add add")
     const existing = this.getData(tagged.tag);
     if (existing.length > 0) return;
     tagged.time = Date.now();

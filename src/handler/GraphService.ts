@@ -357,64 +357,55 @@ export default class GraphService extends IRequestHandler {
     namespace?: string,
     notBefore?: number
   ): Promise<TServiceStatistics[]>  {
-    try {
-      const historicalData =
-      await ServiceUtils.getInstance().getRealtimeHistoricalData(
-        namespace,
-        notBefore
-      );
-      if (historicalData.length === 0) {
-        return []
-      }
-      var servicesStatisticsDict: Record<string, {
-        name: string,
-        totalatencyMean:number,
-        totalRequests:number,
-        totalServerError:number,
-        totalRequestError:number,
-        divBase:number,
-      }> = {}
-
-      historicalData.forEach((h) => {
-        h.services.forEach((si) => {
-          if (!(si.uniqueServiceName in servicesStatisticsDict)){
-            const [service, namespace, version] = si.uniqueServiceName.split("\t");
-            servicesStatisticsDict[si.uniqueServiceName] = {
-              name: `${service}.${namespace} (${version})`,
-              totalatencyMean:0,
-              totalRequests:0,
-              totalServerError:0,
-              totalRequestError:0,
-              divBase:0
-            }
-          }
-          servicesStatisticsDict[si.uniqueServiceName].totalatencyMean += si.latencyMean;
-          
-          servicesStatisticsDict[si.uniqueServiceName].totalRequests += si.requests;
-          servicesStatisticsDict[si.uniqueServiceName].totalRequestError += si.requestErrors;
-          servicesStatisticsDict[si.uniqueServiceName].totalServerError += si.serverErrors;
-          servicesStatisticsDict[si.uniqueServiceName].divBase += 1;
-          
-        });
-      });
-
-      const servicesStatistics = Object.entries(servicesStatisticsDict)
-      .filter(([_, vals]) => vals.divBase !== 0)
-      .map(([key, vals]) => ({
-          uniqueServiceName:key,
-          name:vals.name,
-          latencyMean: vals.totalatencyMean / vals.divBase,
-          serverErrorRate: vals.totalServerError / vals.totalRequests,
-          requestErrorsRate: vals.totalRequestError / vals.totalRequests,
-        })
-      );
-      return servicesStatistics;
-    } catch (err) {
-      Logger.error("Cannot getServiceHistoricalStatistics.");
-      Logger.plain.error("", err);
-      return [];
+    const historicalData =
+    await ServiceUtils.getInstance().getRealtimeHistoricalData(
+      namespace,
+      notBefore
+    );
+    if (historicalData.length === 0) {
+      return []
     }
-
+    var servicesStatisticsDict: Record<string, {
+      name: string,
+      totalLatencyMean:number,
+      totalRequests:number,
+      totalServerError:number,
+      totalRequestError:number,
+      divBase:number,
+    }> = {}
+    historicalData.forEach((h) => {
+      h.services.forEach((si) => {
+        if (!(si.uniqueServiceName in servicesStatisticsDict)){
+          const [service, namespace, version] = si.uniqueServiceName.split("\t");
+          servicesStatisticsDict[si.uniqueServiceName] = {
+            name: `${service}.${namespace} (${version})`,
+            totalLatencyMean:0,
+            totalRequests:0,
+            totalServerError:0,
+            totalRequestError:0,
+            divBase:0
+          }
+        }
+        if(typeof(si.latencyMean) === "number" && isFinite(si.latencyMean)){
+          servicesStatisticsDict[si.uniqueServiceName].totalLatencyMean += si.latencyMean;
+          servicesStatisticsDict[si.uniqueServiceName].divBase += 1;
+        }
+        servicesStatisticsDict[si.uniqueServiceName].totalRequests += si.requests;
+        servicesStatisticsDict[si.uniqueServiceName].totalRequestError += si.requestErrors;
+        servicesStatisticsDict[si.uniqueServiceName].totalServerError += si.serverErrors;
+      });
+    });
+    const servicesStatistics = Object.entries(servicesStatisticsDict)
+    .filter(([_, vals]) => vals.divBase !== 0)
+    .map(([key, vals]) => ({
+        uniqueServiceName:key,
+        name:vals.name,
+        latencyMean: vals.totalLatencyMean / vals.divBase || 0,
+        serverErrorRate: vals.totalServerError / vals.totalRequests || 0,
+        requestErrorsRate: vals.totalRequestError / vals.totalRequests || 0,
+      })
+    );
+    return servicesStatistics;
   }
 
   getServiceCohesion(namespace?: string) {

@@ -55,6 +55,24 @@ export default class ImportExportHandler {
     await MongoOperator.getInstance().clearDatabase();
   }
 
+  async clearOnlyLatestDependencyData() {
+    DataCache.getInstance().clearOnlyLatestDependency();
+    DataCache.getInstance().register([
+      // new CLabelMapping(),
+      // new CEndpointDataType(),
+      // new CCombinedRealtimeData(),
+       new CEndpointDependencies(),
+      // new CReplicas(),
+      // new CTaggedInterfaces(),
+      // new CTaggedSwaggers(),
+      // new CTaggedGraphData(),
+      new CLabeledEndpointDependencies(),
+      // new CUserDefinedLabel(),
+      // new CLookBackRealtimeData(),
+    ]);
+    await MongoOperator.getInstance().clearDatabaseOnlyLatestDependency();
+  }
+
   async importData(importData: [string, any][]) {
     if (!importData) return false;
 

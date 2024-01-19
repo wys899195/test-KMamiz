@@ -135,6 +135,10 @@ export default class DataService extends IRequestHandler {
       await ImportExportHandler.getInstance().clearData();
       res.sendStatus(200);
     });
+    this.addRoute("delete", "/clearOnlyLatestDependencyData", async (_, res) => {
+      await ImportExportHandler.getInstance().clearOnlyLatestDependencyData();
+      res.sendStatus(200);
+    });
     this.addRoute("get", "/export", async (_, res) => {
       res.contentType("application/tar+gzip");
       const json = await ImportExportHandler.getInstance().exportData();
