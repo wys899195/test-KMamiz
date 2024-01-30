@@ -245,11 +245,15 @@ export default class GraphService extends IRequestHandler {
   }
 
   getTagsOfTaggedDependencyGraphData() {
-    return DataCache.getInstance()
-      .get<CTaggedGraphData>("TaggedGraphDatas")
-      .getData()
-      .sort((a, b) => b.time! - a.time!)
-      .map((t) => t.tag);
+    return Array.from(
+        new Set(
+          DataCache.getInstance()
+            .get<CTaggedGraphData>("TaggedGraphDatas")
+            .getData()
+            .sort((a, b) => b.time! - a.time!)
+            .map((t) => t.tag)
+        )
+      );
   }
 
   addTaggedDependencyGraphData(tagged: TTaggedGraphData) {
