@@ -144,7 +144,7 @@ spec:
   clusterIPs:
     - 10.108.106.175
   externalIPs: # <-- add this
-    - 192.168.100.105 # <-- and this
+    - 192.168.49.2 # <-- and this
 ```
 
 Now you can access KMamiz at `http://<external-ip>:<service-port>`.
