@@ -8,7 +8,7 @@ import { CLookBackRealtimeData } from "../classes/Cacheable/CLookBackRealtimeDat
 import { CReplicas } from "../classes/Cacheable/CReplicas";
 import { CTaggedInterfaces } from "../classes/Cacheable/CTaggedInterfaces";
 import { CTaggedSwaggers } from "../classes/Cacheable/CTaggedSwaggers";
-import { CTaggedGraphData } from "../classes/Cacheable/CTaggedGraphData";
+import { CTaggedDiffData } from "../classes/Cacheable/CTaggedDiffData";
 import { CUserDefinedLabel } from "../classes/Cacheable/CUserDefinedLabel";
 import { HistoricalData } from "../classes/HistoricalData";
 import { Traces } from "../classes/Traces";
@@ -128,7 +128,7 @@ export default class Initializer {
       new CReplicas(),
       new CTaggedInterfaces(),
       new CTaggedSwaggers(),
-      new CTaggedGraphData(),
+      new CTaggedDiffData(),
       new CLabeledEndpointDependencies(),
       new CUserDefinedLabel(),
       new CLookBackRealtimeData(),

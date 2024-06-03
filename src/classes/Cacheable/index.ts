@@ -7,7 +7,7 @@ import { CLookBackRealtimeData } from "./CLookBackRealtimeData";
 import { CReplicas } from "./CReplicas";
 import { CTaggedInterfaces } from "./CTaggedInterfaces";
 import { CTaggedSwaggers } from "./CTaggedSwaggers";
-import { CTaggedGraphData } from "./CTaggedGraphData";
+import { CTaggedDiffData } from "./CTaggedDiffData";
 import { CUserDefinedLabel } from "./CUserDefinedLabel";
 
 const classes = {
@@ -20,7 +20,7 @@ const classes = {
   [CUserDefinedLabel.uniqueName]: CUserDefinedLabel,
   [CTaggedInterfaces.uniqueName]: CTaggedInterfaces,
   [CTaggedSwaggers.uniqueName]: CTaggedSwaggers,
-  [CTaggedGraphData.uniqueName]: CTaggedGraphData,
+  [CTaggedDiffData.uniqueName]: CTaggedDiffData,
   [CLookBackRealtimeData.uniqueName]: CLookBackRealtimeData,
 };
 
@@ -34,7 +34,7 @@ const names = [
   CUserDefinedLabel.uniqueName,
   CTaggedInterfaces.uniqueName,
   CTaggedSwaggers.uniqueName,
-  CTaggedGraphData.uniqueName,
+  CTaggedDiffData.uniqueName,
   CLookBackRealtimeData.uniqueName,
 ] as const;
 

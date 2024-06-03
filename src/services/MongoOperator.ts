@@ -13,7 +13,7 @@ import { EndpointDataTypeModel } from "../entities/schema/EndpointDataTypeSchema
 import { EndpointLabelModel } from "../entities/schema/EndpointLabel";
 import { TaggedInterfaceModel } from "../entities/schema/TaggedInterface";
 import { TaggedSwaggerModel } from "../entities/schema/TaggedSwagger";
-import { TaggedGraphDataModel } from "../entities/schema/TaggedGraphData";
+import { TaggedDiffDataModel } from "../entities/schema/TaggedDiffData";
 
 
 export default class MongoOperator {
@@ -121,7 +121,7 @@ export default class MongoOperator {
     model: Model<T>
   ): Promise<T> {
     const m = new model(data);
-    if (!data._id) return await m.save();
+    // if (!data._id) return await m.save();
     if (await model.findById(data._id).exec()) m.isNew = false;
     return (await m.save()).toObject<T>();
   }
@@ -136,7 +136,7 @@ export default class MongoOperator {
     await MongoOperator.getInstance().deleteAll(HistoricalDataModel);
     await MongoOperator.getInstance().deleteAll(TaggedInterfaceModel);
     await MongoOperator.getInstance().deleteAll(TaggedSwaggerModel);
-    await MongoOperator.getInstance().deleteAll(TaggedGraphDataModel);
+    await MongoOperator.getInstance().deleteAll(TaggedDiffDataModel);
     
   }
 
@@ -150,7 +150,7 @@ export default class MongoOperator {
     // await MongoOperator.getInstance().deleteAll(HistoricalDataModel);
     // await MongoOperator.getInstance().deleteAll(TaggedInterfaceModel);
     // await MongoOperator.getInstance().deleteAll(TaggedSwaggerModel);
-    // await MongoOperator.getInstance().deleteAll(TaggedGraphDataModel);
+    // await MongoOperator.getInstance().deleteAll(TaggedDiffDataModel);
     
   }
 }
