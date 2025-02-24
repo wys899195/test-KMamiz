@@ -1,25 +1,26 @@
 ARG APP_ENV=dev
 
-FROM kmamiz-web as web
-FROM node:lts-alpine as base
+FROM kmamiz-web AS web
+FROM node:lts-alpine AS base
+
 WORKDIR /kmamiz
 COPY .env .
 COPY package.json package-lock.json ./
 
-FROM base as installed
+FROM base AS installed
 RUN ["npm", "i"]
 COPY . .
 
-FROM installed as dev-installed
+FROM installed AS dev-installed
 RUN ["npm", "run", "test"]
 
-FROM installed as prod-installed
+FROM installed AS prod-installed
 
-FROM ${APP_ENV}-installed as build
+FROM ${APP_ENV}-installed AS build
 RUN ["npm", "i", "-g", "typescript"]
 RUN ["tsc"]
 
-FROM base as prod
+FROM base AS prod
 ENV NODE_ENV=production
 RUN ["npm", "i"]
 COPY --from=build /kmamiz/dist .
